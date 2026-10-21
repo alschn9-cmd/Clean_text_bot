@@ -1,0 +1,201 @@
+'use strict';
+var text = $('.compare-action span').eq(0).text();
+function addCache(c) {
+  var a = [],
+    e = {
+      id: null,
+      url: '',
+      image: '',
+      name: '',
+      price: '',
+    },
+    t = $(c).attr('class').split(' ')[1],
+    o = $(c).parents('.'.concat(t))[0];
+  $(o).addClass('pro-checked'),
+    (e.id = parseInt(t.split('-')[2])),
+    (e.url = $(o).find('a').attr('href')),
+    (e.image = $(o).find('img').attr('src')),
+    (e.name = $(o).find('.pro-name').text()),
+    (e.price = $(o).find('.product-price span').text()),
+    $(c).parents('.'.concat(t))[1];
+  t = localStorage.getItem('productCachePC');
+  if ((null !== t && (a = JSON.parse(t)), 10 <= a.length))
+    return toastr.warning('The number of products is limited to ten or less.'), void getProductList();
+  a.some(function (c) {
+    return c.id == e.id;
+  }) || (a.unshift(e), localStorage.setItem('productCachePC', JSON.stringify(a))),
+    $(c).html(
+      '<input class="compare-action-check" type="checkbox" checked> <label class="checkLabel"></label> <span>' + text + '</span>'
+    ),
+    $(c).attr('onclick', 'removeCache(this)'),
+    getProductList();
+}
+
+function removeCache(c) {
+  var a = $(c).attr('class').split(' ')[1],
+    c = $(c).parents('.'.concat(a))[0];
+  $(c).removeClass('pro-checked');
+  var e = parseInt(a.split('-')[2]),
+    t = [],
+    a = localStorage.getItem('productCachePC');
+  null !== a && (t = JSON.parse(a)),
+    t.forEach(function (c, a) {
+      c.id == e && (t.splice(a, 1), localStorage.setItem('productCachePC', JSON.stringify(t)));
+    }),
+    $('li.pro-id-'.concat(e, ' .compare-action')).html(
+      '<input class="compare-action-check" type="checkbox"> <label class="checkLabel"></label> <span>' + text + '</span>'
+    ),
+    $('li.pro-id-'.concat(e, ' .compare-action')).attr('onclick', 'addCache(this)'),
+    getProductList();
+}
+
+function getProductList() {
+  $('#productChache_list').html('');
+  var c = [],
+    a = localStorage.getItem('productCachePC');
+  null !== a && (c = JSON.parse(a)), 0 < c.length ? $('.compare-panel').slideDown() : $('.compare-panel').slideUp();
+  var e = $('<div class="selected-all"></div>');
+  $('.prolist-0 li, .prolist-1 li').removeClass('pro-checked'),
+    c.forEach(function (c) {
+      $('li.pro-id-'.concat(c.id)).addClass('pro-checked');
+      c = '<div class="selected-item"><div class="item-box"><div class="item-clear"><i class="ic-close pro-id-'
+        .concat(c.id, '" onclick="removeCache(this)"></i></div><a class="item-content" href="')
+        .concat(c.url, '"><div class="item-img"><img src="')
+        .concat(c.image, '" alt="')
+        .concat(c.name, '"></div><div class="item-title">')
+        .concat(c.name, '</div></a></div></div>');
+      e.append(c);
+    }),
+    $('#productChache_list').append(e),
+    $('.compare-checked').html(c.length);
+  setButton();
+}
+
+function addBtnHandle() {
+  var c = [],
+    a = localStorage.getItem('productCachePC');
+  null != a && (c = JSON.parse(a)),
+    c.forEach(function (c) {
+      $('.compare-action.pro-id-'.concat(c.id)).html(
+        '<input class="compare-action-check" type="checkbox" checked> <label class="checkLabel"></label> <span>' +
+          text +
+          '</span>'
+      ),
+        $('.compare-action.pro-id-'.concat(c.id)).attr('onclick', 'removeCache(this)');
+    });
+}
+
+function setButton() {
+  var productId = $('#productID').attr('value');
+  var productList = [];
+  var cacheList = localStorage.getItem('productCachePC');
+  if (cacheList !== null) {
+    productList = JSON.parse(cacheList);
+  }
+  if (productId != '') {
+    $('.addToCart').removeClass('is-active');
+    for (var i = 0; i < productList.length; i++) {
+      if (productId == productList[i].id) {
+        $('.addToCart').addClass('is-active');
+      }
+    }
+  }
+}
+
+$(function () {
+  getProductList(),
+    addBtnHandle(),
+    $('.compare-panel .close').click(function () {
+      $('.compare-panel').slideUp();
+    }),
+    $('.compare-panel .clear-all').click(function () {
+      var c = [],
+        a = localStorage.getItem('productCachePC');
+      null != a && (c = JSON.parse(a)),
+        c.forEach(function (c) {
+          $('.compare-action.pro-id-'.concat(c.id)).html(
+            '<input class="compare-action-check" type="checkbox"> <label class="checkLabel"></label> <span>' + text + '</span>'
+          ),
+            $('.compare-action.pro-id-'.concat(c.id)).attr('onclick', 'addCache(this)');
+        }),
+        localStorage.clear('productCachePC'),
+        getProductList();
+    }),
+    $('.compare-panel .contact-button').click(function () {
+      window.location = 'http://' + window.location.hostname + '/inquiry';
+    });
+  function t(t, e) {
+    if ('js' == e) {
+      var r = document.createElement('script');
+      r.setAttribute('type', 'text/javascript'), r.setAttribute('src', t);
+    } else 'css' == e && ((r = document.createElement('link')).setAttribute('rel', 'stylesheet'), r.setAttribute('type', 'text/css'), r.setAttribute('href', t));
+    void 0 !== r && document.getElementsByTagName('head')[0].appendChild(r);
+  }
+  'object' != typeof toastr && (t('https://css01.v15cdn.com/toastr.min.css', 'css'), t('https://js01.v15cdn.com/toastr.min.js', 'js')),
+    $('.addToCart').click(function () {
+      if ($(this).hasClass('is-active')) {
+        var productId = $('#productID').attr('value');
+        var productList = [];
+        var cacheList = localStorage.getItem('productCachePC');
+
+        if (cacheList !== null) {
+          productList = JSON.parse(cacheList);
+        }
+
+        if (productList != null) {
+          productList.forEach(function (item, index) {
+            if (item.id == productId) {
+              productList.splice(index, 1);
+              localStorage.setItem('productCachePC', JSON.stringify(productList));
+            }
+          });
+        }
+        getProductList();
+        return;
+      }
+      var t = [],
+        e = $('#productID').attr('value'),
+        r = '';
+      $('.thumbnail-box .list .swiper-slide img'),
+        0 == $('.singglepic').length
+          ? $('.thumbnail-box .list .swiper-slide img').each(function (t) {
+              0 == t && (r = $(this).attr('src'));
+            })
+          : (r = $('.singglepic img').attr('src'));
+      var o = {
+          id: e,
+          url: window.location.href,
+          image: r,
+          name: $('h1.prodetails-name').text(),
+          price: $('.product-content-price .price:first-child').text(),
+        },
+        i = localStorage.getItem('productCachePC');
+      if (null == i) t.unshift(o), localStorage.setItem('productCachePC', JSON.stringify(t)), getProductList();
+      else {
+        if ((t = JSON.parse(i)).length >= 10) return toastr.warning('The number of products is limited to ten or less!'), !1;
+        if (
+          t.some(function (t) {
+            return t.id == o.id;
+          })
+        )
+          return;
+        t.unshift(o), localStorage.setItem('productCachePC', JSON.stringify(t)), getProductList();
+      }
+    }),
+    $('body').append('<div class="orderlayer" style="display:none"></div>'),
+    $('.orderNow').click(function () {
+      var t = JSON.parse(localStorage.getItem('productCachePC')),
+        e = [];
+      (t = t.filter(function (t) {
+        return '' != t.price;
+      })).forEach(function (t) {
+        '' !== t.price && e.push(t.id);
+      }),
+        e.length > 0
+          ? ($('.orderlayer').fadeIn(),
+            setTimeout(function () {
+              (window.location.href = '/payment'), $('.orderlayer').fadeOut();
+            }, 1e3))
+          : toastr.warning("There is no price for the products in the shopping cart, so we can't place an order!");
+    });
+});
